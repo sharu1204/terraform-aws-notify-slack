@@ -69,8 +69,8 @@ def default_notification(subject, message):
 
 def asg_notification(message):
     events = {
-        "autoscaling:EC2_INSTANCE_LAUNCH": "ok",
-        "autoscaling:EC2_INSTANCE_TERMINATE": "ok",
+        "autoscaling:EC2_INSTANCE_LAUNCH": "good",
+        "autoscaling:EC2_INSTANCE_TERMINATE": "warning",
         "autoscaling:EC2_INSTANCE_LAUNCH_ERROR": "danger",
         "autoscaling:EC2_INSTANCE_TERMINATE_ERROR": "danger",
     }
@@ -147,9 +147,7 @@ def notify_slack(subject, message, region):
 
 def lambda_handler(event, context):
     if "LOG_EVENTS" in os.environ and os.environ["LOG_EVENTS"] == "True":
-        logging.warning("Event logging enabled: `{}`".format(json.dumps(event)))
-
-    logging.info(f"Received event: {json.dumps(event, indent=4)}")
+        logging.warning("Event logging enabled: {}".format(json.dumps(event)))
 
     subject = event["Records"][0]["Sns"]["Subject"]
     message = event["Records"][0]["Sns"]["Message"]
