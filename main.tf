@@ -21,7 +21,7 @@ locals {
     sid       = "AllowWriteToCloudwatchLogs"
     effect    = "Allow"
     actions   = ["logs:CreateLogStream", "logs:PutLogEvents", "logs:CreateLogGroup"]
-    resources = "*"
+    resources = ["*"]
   }
 
   lambda_policy_document_kms = {
