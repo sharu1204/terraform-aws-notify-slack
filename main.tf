@@ -20,8 +20,8 @@ locals {
   lambda_policy_document = {
     sid       = "AllowWriteToCloudwatchLogs"
     effect    = "Allow"
-    actions   = ["logs:CreateLogStream", "logs:PutLogEvents"]
-    resources = [element(concat(aws_cloudwatch_log_group.lambda[*].arn, list("")), 0)]
+    actions   = ["logs:CreateLogStream", "logs:PutLogEvents", "logs:CreateLogGroup"]
+    resources = "*"
   }
 
   lambda_policy_document_kms = {
