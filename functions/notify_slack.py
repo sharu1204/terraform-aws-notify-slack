@@ -96,6 +96,21 @@ def asg_notification(message):
     }
 
 
+def rds_notification(message):
+    fields = list()
+    sorted_message = sorted(message.items(), key=lambda x: x[0])
+    for m in sorted_message:
+        fields.append(
+            {"title": m[0], "value": m[1], "short": False if len(m[1]) > 30 else True}
+        )
+
+    return {
+        "color": "warning",
+        "fallback": "RDS Notification triggered",
+        "fields": fields,
+    }
+
+
 # Send a message to a slack channel
 def notify_slack(subject, message, region):
     slack_url = os.environ["SLACK_WEBHOOK_URL"]
@@ -127,8 +142,11 @@ def notify_slack(subject, message, region):
     elif "AutoScalingGroupARN" in message:
         payload["text"] = f'*{message["Service"]}*'
         payload["attachments"].append(asg_notification(message))
+    elif message.get("Event Source").startswith("db-"):
+        payload["text"] = f'*RDS Notification ({message["Event Source"]}*)'
+        payload["attachments"].append(rds_notification(message))
     else:
-        payload["text"] = "AWS notification"
+        payload["text"] = "*AWS notification*"
         payload["attachments"].append(default_notification(subject, message))
 
     logging.info(f"slack payload: {json.dumps(payload, indent=4)}")
