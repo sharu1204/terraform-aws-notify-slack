@@ -54,16 +54,18 @@ def cloudwatch_notification(message, region):
     }
 
 
-def default_notification(subject, message):
+def default_notification(message):
+    fields = list()
+    sorted_message = sorted(message.items(), key=lambda x: x[0])
+    for m in sorted_message:
+        fields.append(
+            {"title": m[0], "value": m[1], "short": False if len(m[1]) > 30 else True}
+        )
+
     return {
-        "fallback": "A new message",
-        "fields": [
-            {
-                "title": subject if subject else "Message",
-                "value": json.dumps(message) if type(message) is dict else message,
-                "short": False,
-            }
-        ],
+        "color": "#800080",  # purple
+        "fallback": "AWS Notification",
+        "fields": fields,
     }
 
 
@@ -93,21 +95,6 @@ def asg_notification(message):
             },
             {"title": "Cause", "value": message["Cause"], "short": False},
         ],
-    }
-
-
-def rds_notification(message):
-    fields = list()
-    sorted_message = sorted(message.items(), key=lambda x: x[0])
-    for m in sorted_message:
-        fields.append(
-            {"title": m[0], "value": m[1], "short": False if len(m[1]) > 30 else True}
-        )
-
-    return {
-        "color": "warning",
-        "fallback": "RDS Notification triggered",
-        "fields": fields,
     }
 
 
@@ -142,12 +129,9 @@ def notify_slack(subject, message, region):
     elif "AutoScalingGroupARN" in message:
         payload["text"] = f'*{message["Service"]}*'
         payload["attachments"].append(asg_notification(message))
-    elif message.get("Event Source").startswith("db-"):
-        payload["text"] = f'*RDS Notification ({message["Event Source"]}*)'
-        payload["attachments"].append(rds_notification(message))
     else:
-        payload["text"] = "*AWS notification*"
-        payload["attachments"].append(default_notification(subject, message))
+        payload["text"] = subject
+        payload["attachments"].append(default_notification(message))
 
     logging.info(f"slack payload: {json.dumps(payload, indent=4)}")
 
